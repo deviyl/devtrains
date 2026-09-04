@@ -1,4 +1,4 @@
-const WORKER_URL = "https://devtrains.deviyl.workers.dev/";
+const WORKER_URL = "https://devtrains.deviyl.workers.dev";
 const CYCLE_DAYS = 9;
 const PAYMENT_ITEM_ID = 366;
 const PAYMENT_QTY = 5;
