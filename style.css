@@ -250,8 +250,8 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-.entry-fill {
-    display: none;
+.entry-sep {
+    color: var(--color-border);
 }
 
 .entry-detail {
