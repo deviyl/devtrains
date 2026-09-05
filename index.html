@@ -1,90 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>devtrains</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deviyl's Trains</title>
+    <link rel="icon" type="image/png" href="/kfc/images/favicon.png">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<main class="ledger">
-
-  <header class="ledger-head">
-    <div class="ledger-title">
-      <span class="ledger-mark">§</span>
-      <h1>devs trains</h1>
+    <div class="page-header">
+        <h1>Deviyl's Trains</h1>
+        <hr>
     </div>
-    <p class="ledger-sub">trains</p>
-  </header>
+    <div class="main-container">
 
-  <section class="hero" aria-live="polite">
-    <div class="hero-figure">
-      <span id="hero-progress">0 / 9</span>
+        <div class="info-card standing-card">
+            <div class="card-header">
+                <span class="card-title">Where we're at</span>
+            </div>
+            <div class="card-body card-body--column">
+                <div class="hero-figure" id="hero-progress">0 / 9</div>
+                <p class="hero-caption">trains logged this cycle</p>
+                <div id="hero-dots" class="hero-dots" aria-hidden="true"></div>
+
+                <dl class="stat-list">
+                    <div class="stat-row">
+                        <dt>Trains received</dt>
+                        <dd id="stat-total-trains">—</dd>
+                    </div>
+                    <div class="stat-row">
+                        <dt>Days trained</dt>
+                        <dd id="stat-days-trained">—</dd>
+                    </div>
+                    <div class="stat-row">
+                        <dt>Cycles earned</dt>
+                        <dd id="stat-cycles-earned">—</dd>
+                    </div>
+                    <div class="stat-row">
+                        <dt>Cycles paid</dt>
+                        <dd id="stat-cycles-paid">—</dd>
+                    </div>
+                    <div class="stat-row stat-row--owed">
+                        <dt>Owed right now</dt>
+                        <dd id="stat-owed">—</dd>
+                    </div>
+                </dl>
+                <p class="stat-note">9 days of trains = 5 xanax</p>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+
+            <div class="info-card">
+                <div class="card-header">
+                    <span class="card-title">The Trains</span>
+                </div>
+                <div class="card-body card-body--column">
+                    <span class="card-description" id="trains-count-note"></span>
+                    <div id="trains-list" class="entry-list">
+                        <p class="empty-note">Loading…</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-header">
+                    <span class="card-title">The Payments</span>
+                </div>
+                <div class="card-body card-body--column">
+                    <span class="card-description" id="payments-count-note"></span>
+                    <div id="payments-list" class="entry-list">
+                        <p class="empty-note">Loading…</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="refresh-bar">
+            <button id="refresh-btn" type="button">Refresh</button>
+            <p id="refresh-status" class="refresh-status">—</p>
+        </div>
+
     </div>
-    <p class="hero-caption">training days logged toward the next payment</p>
-    <div id="hero-dots" class="hero-dots" aria-hidden="true"></div>
-  </section>
-
-  <section class="ledger-block">
-    <div class="ledger-block-head">
-      <h2>Standing</h2>
-    </div>
-    <dl class="tally">
-      <div class="tally-row">
-        <dt>Trains received</dt>
-        <dd id="stat-total-trains">—</dd>
-      </div>
-      <div class="tally-row">
-        <dt>Days trained</dt>
-        <dd id="stat-days-trained">—</dd>
-      </div>
-      <div class="tally-row">
-        <dt>Payment cycles</dt>
-        <dd id="stat-cycles-earned">—</dd>
-      </div>
-      <div class="tally-row">
-        <dt>Payment cycles sent</dt>
-        <dd id="stat-cycles-paid">—</dd>
-      </div>
-      <div class="tally-row tally-row--emphasis">
-        <dt>Owed now</dt>
-        <dd id="stat-owed">—</dd>
-      </div>
-    </dl>
-    <p class="fine-print">One cycle = 9 training days · one payment = 5 xan</p>
-  </section>
-
-  <section class="ledger-block">
-    <div class="ledger-block-head">
-      <h2>Training log</h2>
-      <span class="ledger-block-note" id="trains-count-note"></span>
-    </div>
-    <div id="trains-list" class="entry-list">
-      <p class="empty-note">Loading…</p>
-    </div>
-  </section>
-
-  <section class="ledger-block">
-    <div class="ledger-block-head">
-      <h2>Payments</h2>
-      <span class="ledger-block-note" id="payments-count-note"></span>
-    </div>
-    <div id="payments-list" class="entry-list">
-      <p class="empty-note">Loading…</p>
-    </div>
-  </section>
-
-  <footer class="ledger-foot">
-    <button id="refresh-btn" type="button">Refresh</button>
-    <p id="refresh-status" class="refresh-status">—</p>
-  </footer>
-
-</main>
-
-<script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
