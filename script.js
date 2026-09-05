@@ -1,4 +1,5 @@
-const WORKER_URL = "https://devtrains.deviyl.workers.dev";
+const WORKER_URL = "https://devtrains.deviyl.workers.dev");
+
 const CYCLE_DAYS = 9;
 const PAYMENT_ITEM_ID = 366;
 const PAYMENT_QTY = 5;
@@ -153,7 +154,7 @@ function renderTrainsList(trains) {
       ([date, count]) => `
       <div class="entry-row">
         <span class="entry-date">${date}</span>
-        <span class="entry-fill"></span>
+        <span class="entry-sep">·</span>
         <span class="entry-detail">${count} train${count === 1 ? "" : "s"}</span>
       </div>`
     )
@@ -178,7 +179,7 @@ function renderPaymentsList(payments) {
       return `
       <div class="entry-row">
         <span class="entry-date">${date}</span>
-        <span class="entry-fill"></span>
+        <span class="entry-sep">·</span>
         <span class="entry-detail${isPaymentItem ? " is-paid" : ""}">${items}</span>
       </div>`;
     })
