@@ -135,7 +135,7 @@ function renderStandings(trains, payments) {
   els.statDaysTrained.textContent = daysTrained;
   els.statCyclesEarned.textContent = cyclesEarned;
   els.statCyclesPaid.textContent = cyclesPaid;
-  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x xanax` : "nothing yet";
+  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x edvd` : "nothing yet";
 }
 
 function renderTrainsList(trains) {
