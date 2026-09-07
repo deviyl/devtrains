@@ -1,5 +1,5 @@
 {
-  "lastRefresh": 1788744046072,
+  "lastRefresh": 1788745745368,
   "logs": {
     "trains": [
       {
@@ -1299,6 +1299,28 @@
         }
       }
     ],
-    "payments": []
+    "payments": [
+      {
+        "id": "xUxYXgeL9E21jO4ZUHrr",
+        "timestamp": 1788745615,
+        "details": {
+          "id": 4102,
+          "title": "Item send",
+          "category": "Item sending"
+        },
+        "data": {
+          "receiver": 2738658,
+          "items": [
+            {
+              "id": 366,
+              "uid": null,
+              "qty": 5
+            }
+          ],
+          "message": "payment for first 9 days of trains!"
+        },
+        "params": {}
+      }
+    ]
   }
 }
