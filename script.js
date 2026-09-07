@@ -6,7 +6,7 @@ const PAYMENT_QTY = 5;
 const REFRESH_COOLDOWN_MS = 60 * 1000;
 
 const ITEM_NAMES = {
-  366: "xanax",
+  366: "edvd",
 };
 
 const els = {
