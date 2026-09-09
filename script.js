@@ -1,4 +1,4 @@
-const WORKER_URL = "https://devtrains.deviyl.workers.dev";
+const WORKER_URL = "https://devtrains.deviyl.workers.dev".replace(/\/+$/, "");
 
 const CYCLE_DAYS = 9;
 const PAYMENT_ITEM_ID = 366;
@@ -96,74 +96,117 @@ function startCooldown(nextRefreshAt) {
 }
 
 function render(data) {
-  const trains = (data.logs?.trains || []).slice().sort((a, b) => b.timestamp - a.timestamp);
+  const trains = data.logs?.trains || [];
   const payments = (data.logs?.payments || []).slice().sort((a, b) => b.timestamp - a.timestamp);
 
-  renderStandings(trains, payments);
-  renderTrainsList(trains);
-  renderPaymentsList(payments);
+  const ledger = buildLedger(trains, payments);
+
+  renderStandings(ledger);
+  renderTrainsList(ledger);
+  renderPaymentsList(ledger, payments);
 
   if (data.lastRefresh) {
     els.refreshStatus.textContent = `Last refreshed ${relativeTime(data.lastRefresh)}.`;
   }
 }
 
-function renderStandings(trains, payments) {
-  const trainingDays = uniqueUtcDates(trains.map((e) => e.timestamp));
-  const daysTrained = trainingDays.length;
+function buildLedger(trains, payments) {
+  const dayGroups = Object.entries(groupByUtcDate(trains.map((e) => e.timestamp)))
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
 
+  const daysTrained = dayGroups.length;
   const cyclesEarned = Math.floor(daysTrained / CYCLE_DAYS);
   const progressInCycle = daysTrained % CYCLE_DAYS;
 
-  const item366Qty = payments
-    .flatMap((e) => e.data?.items || [])
-    .filter((i) => i.id === PAYMENT_ITEM_ID)
-    .reduce((sum, i) => sum + (i.qty || 0), 0);
-  const cyclesPaid = Math.floor(item366Qty / PAYMENT_QTY);
+  const cycles = [];
+  for (let i = 0; i < cyclesEarned; i++) {
+    cycles.push(dayGroups.slice(i * CYCLE_DAYS, (i + 1) * CYCLE_DAYS));
+  }
+  const unsettledDays = dayGroups.slice(cyclesEarned * CYCLE_DAYS);
 
-  const owed = Math.max(0, cyclesEarned - cyclesPaid);
+  const item366Payments = payments
+    .map((p) => ({
+      entry: p,
+      qty: (p.data?.items || [])
+        .filter((i) => i.id === PAYMENT_ITEM_ID)
+        .reduce((sum, i) => sum + (i.qty || 0), 0),
+    }))
+    .filter((p) => p.qty > 0)
+    .sort((a, b) => a.entry.timestamp - b.entry.timestamp);
 
-  els.heroProgress.textContent = `${progressInCycle} / ${CYCLE_DAYS}`;
+  const settledCyclesByPaymentId = new Map();
+  let cycleIndex = 0;
+  let carry = 0;
+
+  for (const pmt of item366Payments) {
+    let available = pmt.qty + carry;
+    carry = 0;
+    while (available >= PAYMENT_QTY && cycleIndex < cyclesEarned) {
+      if (!settledCyclesByPaymentId.has(pmt.entry.id)) {
+        settledCyclesByPaymentId.set(pmt.entry.id, []);
+      }
+      settledCyclesByPaymentId.get(pmt.entry.id).push(cycleIndex);
+      cycleIndex++;
+      available -= PAYMENT_QTY;
+    }
+    carry = available;
+  }
+
+  const settledCycleIndices = new Set(
+    [...settledCyclesByPaymentId.values()].flat()
+  );
+  const cyclesPaid = settledCycleIndices.size;
+
+  const unpaidDayGroups = [
+    ...cycles.filter((_, idx) => !settledCycleIndices.has(idx)).flat(),
+    ...unsettledDays,
+  ];
+
+  return {
+    dayGroups,
+    daysTrained,
+    cyclesEarned,
+    progressInCycle,
+    cycles,
+    cyclesPaid,
+    unpaidDayGroups,
+    settledCyclesByPaymentId,
+  };
+}
+
+function renderStandings(ledger) {
+  const owed = Math.max(0, ledger.cyclesEarned - ledger.cyclesPaid);
+
+  els.heroProgress.textContent = `${ledger.progressInCycle} / ${CYCLE_DAYS}`;
   els.heroDots.innerHTML = "";
   for (let i = 0; i < CYCLE_DAYS; i++) {
     const dot = document.createElement("span");
-    if (i < progressInCycle) dot.classList.add("filled");
+    if (i < ledger.progressInCycle) dot.classList.add("filled");
     els.heroDots.appendChild(dot);
   }
 
-  els.statTotalTrains.textContent = trains.length;
-  els.statDaysTrained.textContent = daysTrained;
-  els.statCyclesEarned.textContent = cyclesEarned;
-  els.statCyclesPaid.textContent = cyclesPaid;
-  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x edvd` : "nothing yet";
+  els.statTotalTrains.textContent = ledger.dayGroups.reduce((sum, d) => sum + d.count, 0);
+  els.statDaysTrained.textContent = ledger.daysTrained;
+  els.statCyclesEarned.textContent = ledger.cyclesEarned;
+  els.statCyclesPaid.textContent = ledger.cyclesPaid;
+  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x xanax` : "nothing yet";
 }
 
-function renderTrainsList(trains) {
-  els.trainsCountNote.textContent = trains.length ? `${trains.length} logged` : "";
+function renderTrainsList(ledger) {
+  const days = ledger.unpaidDayGroups.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
 
-  if (!trains.length) {
-    els.trainsList.innerHTML = `<p class="empty-note">Nothing archived yet — hit refresh.</p>`;
+  els.trainsCountNote.textContent = days.length ? `${days.length} unpaid days` : "";
+
+  if (!days.length) {
+    els.trainsList.innerHTML = `<p class="empty-note">Nothing owed right now — hit refresh to check for new ones.</p>`;
     return;
   }
 
-  const byDay = groupByUtcDate(trains.map((e) => e.timestamp));
-  const rows = Object.entries(byDay)
-    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-    .slice(0, 21)
-    .map(
-      ([date, count]) => `
-      <div class="entry-row">
-        <span class="entry-date">${date}</span>
-        <span class="entry-sep">·</span>
-        <span class="entry-detail">${count} train${count === 1 ? "" : "s"}</span>
-      </div>`
-    )
-    .join("");
-
-  els.trainsList.innerHTML = rows;
+  els.trainsList.innerHTML = days.map((d) => dayRow(d.date, d.count)).join("");
 }
 
-function renderPaymentsList(payments) {
+function renderPaymentsList(ledger, payments) {
   els.paymentsCountNote.textContent = payments.length ? `${payments.length} logged` : "";
 
   if (!payments.length) {
@@ -171,21 +214,57 @@ function renderPaymentsList(payments) {
     return;
   }
 
-  const rows = payments
-    .map((e) => {
-      const date = utcDateString(e.timestamp);
-      const items = (e.data?.items || []).map((i) => describeItem(i)).join(", ");
-      const isPaymentItem = (e.data?.items || []).some((i) => i.id === PAYMENT_ITEM_ID);
-      return `
+  els.paymentsList.innerHTML = payments.map((e) => paymentRow(e, ledger)).join("");
+}
+
+function dayRow(date, count) {
+  return `
+    <div class="entry-row">
+      <span class="entry-date">${date}</span>
+      <span class="entry-sep">·</span>
+      <span class="entry-detail">${count} train${count === 1 ? "" : "s"}</span>
+    </div>`;
+}
+
+function paymentRow(entry, ledger) {
+  const date = utcDateString(entry.timestamp);
+  const items = (entry.data?.items || []).map((i) => describeItem(i)).join(", ");
+  const isPaymentItem = (entry.data?.items || []).some((i) => i.id === PAYMENT_ITEM_ID);
+  const detailClass = isPaymentItem ? " is-paid" : "";
+
+  const cycleIndices = ledger.settledCyclesByPaymentId.get(entry.id);
+
+  if (!cycleIndices || !cycleIndices.length) {
+    return `
       <div class="entry-row">
         <span class="entry-date">${date}</span>
         <span class="entry-sep">·</span>
-        <span class="entry-detail${isPaymentItem ? " is-paid" : ""}">${items}</span>
+        <span class="entry-detail${detailClass}">${items}</span>
       </div>`;
-    })
+  }
+
+  const coveredDays = cycleIndices
+    .flatMap((idx) => ledger.cycles[idx])
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+
+  const subrows = coveredDays
+    .map((d) => `
+      <div class="entry-subrow">
+        <span class="entry-date">${d.date}</span>
+        <span class="entry-sep">·</span>
+        <span class="entry-detail">${d.count} train${d.count === 1 ? "" : "s"}</span>
+      </div>`)
     .join("");
 
-  els.paymentsList.innerHTML = rows;
+  return `
+    <details class="entry-row entry-row--expandable">
+      <summary>
+        <span class="entry-date">${date}</span>
+        <span class="entry-sep">·</span>
+        <span class="entry-detail${detailClass}">${items}</span>
+      </summary>
+      <div class="entry-subrows">${subrows}</div>
+    </details>`;
 }
 
 function describeItem(item) {
@@ -195,10 +274,6 @@ function describeItem(item) {
 
 function utcDateString(unixSeconds) {
   return new Date(unixSeconds * 1000).toISOString().slice(0, 10);
-}
-
-function uniqueUtcDates(timestamps) {
-  return [...new Set(timestamps.map(utcDateString))];
 }
 
 function groupByUtcDate(timestamps) {
