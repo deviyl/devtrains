@@ -143,8 +143,6 @@ body {
     background: var(--color-primary-light);
 }
 
-/* Standing card: hero number + stat rows */
-
 .standing-card {
     max-width: 640px;
     margin: 0 auto 30px;
@@ -224,8 +222,6 @@ body {
     text-align: center;
 }
 
-/* Entry lists: trains / payments */
-
 .entry-list {
     width: 100%;
 }
@@ -254,6 +250,52 @@ body {
     color: var(--color-border);
 }
 
+.entry-row--expandable {
+    padding: 0;
+}
+
+.entry-row--expandable summary {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+.entry-row--expandable summary::-webkit-details-marker {
+    display: none;
+}
+
+.entry-row--expandable summary::marker {
+    content: "";
+}
+
+.entry-row--expandable summary::before {
+    content: "▸";
+    color: var(--color-primary);
+    font-size: 0.75em;
+}
+
+.entry-row--expandable[open] summary::before {
+    content: "▾";
+}
+
+.entry-subrows {
+    padding: 0 0 10px 20px;
+}
+
+.entry-subrow {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 0.8em;
+    color: #888;
+}
+
 .entry-detail {
     white-space: nowrap;
     text-align: right;
@@ -271,8 +313,6 @@ body {
     text-align: center;
     padding: 10px 0;
 }
-
-/* Refresh bar */
 
 .refresh-bar {
     display: flex;
