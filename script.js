@@ -1,6 +1,8 @@
 const WORKER_URL = "https://devtrains.deviyl.workers.dev".replace(/\/+$/, "");
 
 const CYCLE_DAYS = 9;
+const TRAINS_PER_DAY = 8;
+const CYCLE_TRAINS = CYCLE_DAYS * TRAINS_PER_DAY;
 const PAYMENT_ITEM_ID = 366;
 const PAYMENT_QTY = 5;
 const REFRESH_COOLDOWN_MS = 60 * 1000;
@@ -115,15 +117,25 @@ function buildLedger(trains, payments) {
     .map(([date, count]) => ({ date, count }))
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 
-  const daysTrained = dayGroups.length;
+  const totalTrains = dayGroups.reduce((sum, d) => sum + d.count, 0);
+  const daysTrained = Math.floor(totalTrains / TRAINS_PER_DAY);
   const cyclesEarned = Math.floor(daysTrained / CYCLE_DAYS);
   const progressInCycle = daysTrained % CYCLE_DAYS;
 
   const cycles = [];
-  for (let i = 0; i < cyclesEarned; i++) {
-    cycles.push(dayGroups.slice(i * CYCLE_DAYS, (i + 1) * CYCLE_DAYS));
+  let building = [];
+  let cycleRunningTotal = 0;
+
+  for (const day of dayGroups) {
+    building.push(day);
+    cycleRunningTotal += day.count;
+    if (cycleRunningTotal >= CYCLE_TRAINS && cycles.length < cyclesEarned) {
+      cycles.push(building);
+      building = [];
+      cycleRunningTotal -= CYCLE_TRAINS;
+    }
   }
-  const unsettledDays = dayGroups.slice(cyclesEarned * CYCLE_DAYS);
+  const unsettledDays = building;
 
   const item366Payments = payments
     .map((p) => ({
@@ -165,6 +177,7 @@ function buildLedger(trains, payments) {
 
   return {
     dayGroups,
+    totalTrains,
     daysTrained,
     cyclesEarned,
     progressInCycle,
@@ -186,11 +199,11 @@ function renderStandings(ledger) {
     els.heroDots.appendChild(dot);
   }
 
-  els.statTotalTrains.textContent = ledger.dayGroups.reduce((sum, d) => sum + d.count, 0);
+  els.statTotalTrains.textContent = ledger.totalTrains;
   els.statDaysTrained.textContent = ledger.daysTrained;
   els.statCyclesEarned.textContent = ledger.cyclesEarned;
   els.statCyclesPaid.textContent = ledger.cyclesPaid;
-  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x xanax` : "nothing yet";
+  els.statOwed.textContent = owed > 0 ? `${owed * PAYMENT_QTY}x edvd` : "nothing yet";
 }
 
 function renderTrainsList(ledger) {
