@@ -1,5 +1,7 @@
 const WORKER_URL = "https://devtrains.deviyl.workers.dev".replace(/\/+$/, "");
 
+const COUNT_FROM = "2026-10-13T22:09:39Z";
+
 const CYCLE_DAYS = 9;
 const TRAINS_PER_DAY = 8;
 const CYCLE_TRAINS = CYCLE_DAYS * TRAINS_PER_DAY;
@@ -98,8 +100,11 @@ function startCooldown(nextRefreshAt) {
 }
 
 function render(data) {
-  const trains = data.logs?.trains || [];
-  const payments = (data.logs?.payments || []).slice().sort((a, b) => b.timestamp - a.timestamp);
+  const countFromSec = Date.parse(COUNT_FROM) / 1000;
+  const trains = (data.logs?.trains || []).filter((e) => e.timestamp >= countFromSec);
+  const payments = (data.logs?.payments || [])
+    .filter((e) => e.timestamp >= countFromSec)
+    .sort((a, b) => b.timestamp - a.timestamp);
 
   const ledger = buildLedger(trains, payments);
 
