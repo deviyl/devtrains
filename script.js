@@ -1,6 +1,6 @@
 const WORKER_URL = "https://devtrains.deviyl.workers.dev".replace(/\/+$/, "");
 
-const COUNT_FROM = "2026-10-13T00:00:00Z";
+const COUNT_FROM = "2026-10-23T11:00:00Z";
 
 const CYCLE_DAYS = 10;
 const TRAINS_PER_DAY = 8;
