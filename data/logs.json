@@ -1,5 +1,5 @@
 {
-  "lastRefresh": 1793660938978,
+  "lastRefresh": 1793674936119,
   "logs": {
     "trains": [
       {
@@ -8014,6 +8014,27 @@
       }
     ],
     "payments": [
+      {
+        "id": "cahQ5Z8AdVM1sCosAvMx",
+        "timestamp": 1793661020,
+        "details": {
+          "id": 4102,
+          "title": "Item send",
+          "category": "Item sending"
+        },
+        "data": {
+          "receiver": 2738658,
+          "items": [
+            {
+              "id": 366,
+              "uid": null,
+              "qty": 5
+            }
+          ],
+          "message": "10 more down"
+        },
+        "params": {}
+      },
       {
         "id": "jgoJcYKjHHJKA5qTpBJM",
         "timestamp": 1792770117,
